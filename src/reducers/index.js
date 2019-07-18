@@ -1,4 +1,4 @@
-import { union } from 'folktale/adt/union'
+import { union, derivations } from 'folktale/adt/union'
 import { chunk } from 'lodash/fp'
 
 const getAccountView = accounts => currentPage => pageSize => totalPages =>
@@ -16,10 +16,12 @@ const AccountsState = union('AccountsState', {
     AccountsLoadFailed(error) { return { error } },
     AccountsLoadSuccess(accountView) { return { accountView } }
 })
-const { AccountsNotLoaded, AccountsLoading, AccountsLoadNothing, AccountsLoadFailed, AccountsLoadSuccess } = AccountsState
+.derive(derivations.debugRepresentation)
+export const { AccountsNotLoaded, AccountsLoading, AccountsLoadNothing, AccountsLoadFailed, AccountsLoadSuccess } = AccountsState
 
 export const accounts = (state=AccountsNotLoaded(), action) => {
-  switch(action.type) {
+  console.log("accounts, action:", action)
+	switch(action.type) {
       case 'fetchAccounts':
           return AccountsLoading()
         case 'fetchAccountsResult':

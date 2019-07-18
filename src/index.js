@@ -6,7 +6,8 @@ import * as serviceWorker from './serviceWorker';
 import { createStore } from 'redux'
 import { accounts } from './reducers'
 
-const store = createStore(accounts)
+const store = createStore(accounts,
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
 
 ReactDOM.render(<App store={store} />, document.getElementById('root'));
 
