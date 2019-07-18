@@ -4,9 +4,10 @@ import './App.css';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { connect } from 'react-redux'
+import Result from 'folktale/result'
 
 const getAccountStateView = accountsState =>
-accountsState.matchWith({
+  accountsState.matchWith({
     AccountsNotLoaded: () => (<div>Waiting.</div>),
     AccountsLoading: () => (<div>Loading...</div>),
     AccountsLoadNothing: () => (<div>No accounts.</div>),
@@ -25,14 +26,25 @@ const Cow = props => {
 )}
 const CowContainer = connect(
   state => ({ accountsState: state }),
-  (dispatch, ownProps) => {
+  dispatch => {
     return {
       onClick: () => {
+        console.log("dat inner")
         dispatch({type: 'fetchAccounts'})
+        setTimeout(()=> {
+          dispatch({
+            type: 'fetchAccountsResult', 
+            fetchResult: Result.Ok([
+              {id: '1', nickname: 'cow', accountType: 'dd'}
+            ])
+          })
+        }, 3 * 1000)
       }
     }
   }
 )(Cow)
+
+
 
 const OhYeah = () => (
   <h2>Now Now Oh Yeah</h2>
