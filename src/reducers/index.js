@@ -45,23 +45,51 @@ const parseAccounts = accounts =>
     accounts
   )
 
+  const nextPage = accountView => {
+    if(accountView.currentPage < accountView.pageSize - 1) {
+      return {...accountView, currentPage: accountView.currentPage + 1}
+    }
+    return accountView
+  }
+
+  const previousPage = accountView => {
+    if(accountView.currentPage > 0) {
+      return {...accountView, currentPage: accountView.currentPage - 1}
+    }
+    return accountView
+  }
+  
 export const accounts = (state=AccountsNotLoaded(), action) => {
   console.log("accounts, action:", action)
 	switch(action.type) {
       case 'fetchAccounts':
           return AccountsLoading()
-        case 'fetchAccountsResult':
-           return action.fetchResult.matchWith({
-               Ok: ({ value }) => {
-                 const accounts = parseAccounts(value)
-                  const desiredPageSize = 10
-                  const chunkedAccounts = chunk(desiredPageSize)(accounts)
-                  const accountView = getAccountView(accounts)(0)(desiredPageSize)(chunkedAccounts.length)
-                  return AccountsLoadSuccess(accountView)
-              },
-              Error: ({ error }) =>
-                AccountsLoadFailed(error)
-            })
+      case 'fetchAccountsResult':
+          return action.fetchResult.matchWith({
+              Ok: ({ value }) => {
+                const accounts = parseAccounts(value)
+                const desiredPageSize = 10
+                const chunkedAccounts = chunk(desiredPageSize)(accounts)
+                const accountView = getAccountView(accounts)(0)(desiredPageSize)(chunkedAccounts.length)
+                return AccountsLoadSuccess(accountView)
+            },
+            Error: ({ error }) =>
+              AccountsLoadFailed(error)
+          })
+      case 'previousAccountPage':
+        if(AccountsLoadSuccess.hasInstance(state)) {
+          return AccountsLoadSuccess(
+            previousPage(state.accountView)
+          )
+        }
+        return state
+      case 'nextAccountPage':
+          if(AccountsLoadSuccess.hasInstance(state)) {
+            return AccountsLoadSuccess(
+              nextPage(state.accountView)
+            )
+          }
+          return state
 		default:
 			return state
   }

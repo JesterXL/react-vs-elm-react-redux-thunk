@@ -8,7 +8,7 @@ import Result from 'folktale/result'
 import { map, chunk, isNil } from 'lodash/fp'
 import fetch from 'cross-fetch'
 
-const getAccountStateView = onPreviousClick => accountsState =>
+const getAccountStateView = onPreviousClick => onNextClick => accountsState =>
   accountsState.matchWith({
     AccountsNotLoaded: () => (<div>Accounts not fetched yet.</div>),
     AccountsLoading: () => (<div>Loading accounts...</div>),
@@ -16,7 +16,7 @@ const getAccountStateView = onPreviousClick => accountsState =>
     AccountsLoadFailed: ({ error }) => (<div>Accounts failed to load: ${error.message}</div>),
     AccountsLoadSuccess: ({ accountView }) => {
       const currentPageOfAccounts = getCurrentPage(accountView.pageSize)(accountView.currentPage)(accountView.accounts)
-      return getAccountsTable(onPreviousClick)(accountView.totalPages)(accountView.currentPage)(currentPageOfAccounts)
+      return getAccountsTable(onPreviousClick)(onNextClick)(accountView.totalPages)(accountView.currentPage)(currentPageOfAccounts)
     }
   })
 
@@ -50,7 +50,7 @@ const Cow = props => {
     <div style={accountsWrapperStyle}>
       <button style={fetchButtonStyle} onClick={props.onClick}>Fetch Accounts</button>
     </div>
-    {getAccountStateView(props.onPreviousClick)(props.accountsState)}
+    {getAccountStateView(props.onPreviousClick)(props.onNextClick)(props.accountsState)}
   </div>
 )}
 const CowContainer = connect(
@@ -80,8 +80,10 @@ const CowContainer = connect(
         )
       },
       onPreviousClick: event => {
-        console.log("previousAccountPage")
         dispatch({type: 'previousAccountPage'})
+      },
+      onNextClick: event => {
+        dispatch({type: 'nextAccountPage'})
       }
     }
   }
@@ -100,7 +102,7 @@ const getAccountTableRow = account => (
   </tr>
 )
 
-const getAccountsTable = onPreviousClick => totalPages => currentPage => accounts => (
+const getAccountsTable = onPreviousClick => onNextClick => totalPages => currentPage => accounts => (
   <div>
     <table style={accountsTableStyles}>
       <tbody>
@@ -113,7 +115,7 @@ const getAccountsTable = onPreviousClick => totalPages => currentPage => account
       </tbody>
     </table>
     <br />
-    {getPagination(onPreviousClick)(currentPage)(totalPages)}
+    {getPagination(onPreviousClick)(onNextClick)(currentPage)(totalPages)}
   </div>
 )
 
@@ -145,7 +147,6 @@ const PreviousButtonDisabled = () => (
 )
 
 const getPreviousButton = onPreviousClick => currentPage => totalPages => {
-  console.log("currentPage === totalPages:", (currentPage === totalPages))
   if(currentPage === totalPages) {
     return (<PreviousButtonDisabled />)
   }
@@ -156,11 +157,21 @@ const paginationTextStyle = {
   padding: '8px',
   width: '60px'
 }
-const getPagination = onPreviousClick => currentPage => totalPages => (
+
+const nextButtonEnabledButtonStyle = {
+  disabled: false,
+  flexGrow: 2
+}
+const NextButtonEnabled = ({ onClick }) => (
+  <button style={nextButtonEnabledButtonStyle} onClick={onClick}>&gt;</button>
+)
+
+const getPagination = onPreviousClick => onNextClick => currentPage => totalPages => (
   <div style={paginationStyle}>
     <div style={innerPaginationStyle}>
       {getPreviousButton(onPreviousClick)(currentPage)(totalPages)}
       <div style={paginationTextStyle}>{currentPage + 1} of {totalPages}</div>
+      <NextButtonEnabled onClick={onNextClick} />
     </div>
   </div>
 )
