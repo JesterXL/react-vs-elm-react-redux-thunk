@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
@@ -13,12 +12,13 @@ const getAccountStateView = onPreviousClick => onNextClick => accountsState =>
     AccountsNotLoaded: () => (<div>Accounts not fetched yet.</div>),
     AccountsLoading: () => (<div>Loading accounts...</div>),
     AccountsLoadNothing: () => (<div>No accounts.</div>),
-    AccountsLoadFailed: ({ error }) => (<div>Accounts failed to load: ${error.message}</div>),
+    AccountsLoadFailed: ({ value }) => (<div>{value.message}</div>),
     AccountsLoadSuccess: ({ accountView }) => {
       const currentPageOfAccounts = getCurrentPage(accountView.pageSize)(accountView.currentPage)(accountView.accounts)
       return getAccountsTable(onPreviousClick)(onNextClick)(accountView.totalPages)(accountView.currentPage)(currentPageOfAccounts)
     }
   })
+
 
 const mainPageMarginStyle = {
   margin: '8px'
@@ -40,10 +40,10 @@ const getCurrentPage = pageSize => currentPage => accounts => {
     return []
   }
   return chunked[currentPage]
-}
-  
 
-const Cow = props => {
+}
+
+const Accounts = props => {
   return (
   <div style={mainPageMarginStyle}>
     <h1 style={titleStyle}>Accounts</h1>
@@ -53,7 +53,7 @@ const Cow = props => {
     {getAccountStateView(props.onPreviousClick)(props.onNextClick)(props.accountsState)}
   </div>
 )}
-const CowContainer = connect(
+const AccountsConnected = connect(
   state => ({ accountsState: state }),
   dispatch => {
     return {
@@ -67,19 +67,22 @@ const CowContainer = connect(
           return res.json()
         })
         .then(
-          accountsJSON => dispatch({
-            type: 'fetchAccountsResult',
-            fetchResult: Result.Ok(accountsJSON)
-          })
+          accountsJSON =>
+            dispatch({
+              type: 'fetchAccountsResult',
+              fetchResult: Result.Ok(accountsJSON)
+            })
         )
         .catch(
-          error => dispatch({
-            type: 'fetchAccountsResult',
-            fetchResult: Result.Error(new Error(`Failed to get accounts: ${error.message}`))
-          })
+          error =>
+            dispatch({
+              type: 'fetchAccountsResult',
+              fetchResult: Result.Error(new Error(`Failed to get accounts: ${error.message}`))
+            })
         )
       },
       onPreviousClick: event => {
+        console.log("onPreviousClck")
         dispatch({type: 'previousAccountPage'})
       },
       onNextClick: event => {
@@ -87,7 +90,7 @@ const CowContainer = connect(
       }
     }
   }
-)(Cow)
+)(Accounts)
 
 
 const accountsTableStyles = {
@@ -147,6 +150,7 @@ const PreviousButtonDisabled = () => (
 )
 
 const getPreviousButton = onPreviousClick => currentPage => totalPages => {
+  console.log("currentPage === totalPages:", (currentPage === totalPages))
   if(currentPage === totalPages) {
     return (<PreviousButtonDisabled />)
   }
@@ -182,8 +186,8 @@ const OhYeah = () => (
 const App = ({ store }) => (
   <Provider store={store}>
     <Router>
-      <Route exact path="/" component={OhYeah} />
-      <Route exact path="/cow" component={CowContainer} />
+      <Route exact path="/" component={AccountsConnected} />
+      <Route exact path="/cow" component={OhYeah} />
     </Router>
   </Provider>
 )

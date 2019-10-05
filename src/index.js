@@ -3,14 +3,15 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, compose } from 'redux'
 import { accounts } from './reducers'
 import thunk from 'redux-thunk'
 
-const store = createStore(accounts,
-    applyMiddleware(
-        // window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-        thunk
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+const store = createStore(accounts, composeEnhancers(
+        applyMiddleware(
+            thunk
+        )
     )
 )
 

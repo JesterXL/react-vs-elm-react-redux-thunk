@@ -46,7 +46,7 @@ const parseAccounts = accounts =>
   )
 
   const nextPage = accountView => {
-    if(accountView.currentPage < accountView.pageSize - 1) {
+    if(accountView.currentPage < accountView.pageSize ) {
       return {...accountView, currentPage: accountView.currentPage + 1}
     }
     return accountView
@@ -60,7 +60,6 @@ const parseAccounts = accounts =>
   }
   
 export const accounts = (state=AccountsNotLoaded(), action) => {
-  console.log("accounts, action:", action)
 	switch(action.type) {
       case 'fetchAccounts':
           return AccountsLoading()
@@ -73,10 +72,11 @@ export const accounts = (state=AccountsNotLoaded(), action) => {
                 const accountView = getAccountView(accounts)(0)(desiredPageSize)(chunkedAccounts.length)
                 return AccountsLoadSuccess(accountView)
             },
-            Error: ({ error }) =>
-              AccountsLoadFailed(error)
+            Error: ({ value }) =>
+              AccountsLoadFailed(value)
           })
       case 'previousAccountPage':
+        console.log("AccountsLoadSuccess.hasInstance(state):", AccountsLoadSuccess.hasInstance(state))
         if(AccountsLoadSuccess.hasInstance(state)) {
           return AccountsLoadSuccess(
             previousPage(state.accountView)
